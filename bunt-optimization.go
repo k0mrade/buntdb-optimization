@@ -21,14 +21,14 @@ import (
 
 func main() {
 	start := time.Now()
-	db, err := bolt.Open("bolt.db", 0600, nil)
+	db, err := bolt.Open("_bolt.db", 0600, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer db.Close()
 	fmt.Printf("Reading Bolt database %v\n", time.Since(start))
 	start = time.Now()
-	dbbunt, err := buntdb.Open("bunt100K.db")
+	dbbunt, err := buntdb.Open("_bunt100K.db")
 	if err != nil {
 		log.Fatal(err)
 	}
