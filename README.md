@@ -1,6 +1,10 @@
 # buntdb-optimization
 search optimal key:value structure for buntdb
 
+IndexString improvement
+
+Creating IndexString time is reduced from 32.485058468s to 26.732144865s.
+The index is based on 1628953 rows. 
 
 Before commit 823e2ea1467b2a65f30f8f8469f00c7c29317dd3
 
@@ -15,8 +19,7 @@ Reading 214277 rows from index AD000008 was --> 141.407204ms
 
 After commit 823e2ea1467b2a65f30f8f8469f00c7c29317dd3
 
-bash-3.2$ go run bunt-optimization.go                                                                                                                                             
-Reading Bolt database 79.231µs                                                                                                                                                    
+bash-3.2$ go run bunt-optimization.go                                                                                                                                                 
 Reading Bunt database --> 8.927277245s                                                                                                                                            
 String index AD000007 creation time --> 26.732144865s                                                                                                                             
 String index AD000008 creation time --> 4.213542682s                                                                                                                              
