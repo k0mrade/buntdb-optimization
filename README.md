@@ -1,2 +1,4 @@
 # buntdb-optimization
-search optimal key:value structure for BuntDB.
+search optimal key:value structure for buntdb
+
+
