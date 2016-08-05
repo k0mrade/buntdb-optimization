@@ -16,7 +16,7 @@ import (
 	"time"
 
 	"github.com/boltdb/bolt"
-	"github.com/k0mrade/buntdb"
+	"github.com/tidwall/buntdb"
 )
 
 func main() {
@@ -28,19 +28,22 @@ func main() {
 	defer db.Close()
 	fmt.Printf("Reading Bolt database %v\n", time.Since(start))
 	start = time.Now()
-	dbbunt, err := buntdb.Open("_bunt100K.db")
+	dbbunt, err := buntdb.Open("_bunt1M.db")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer dbbunt.Close()
-	fmt.Printf("Reading Bunt database %v\n", time.Since(start))
+	fmt.Printf("Reading Bunt database --> %v\n", time.Since(start))
 	start = time.Now()
-	// dbbunt.CreateIndex("AD000007", "AD000007 *", buntdb.IndexString)
-	// dbbunt.CreateIndex("AD000008", "AD000008 *", buntdb.IndexString)
+	dbbunt.CreateIndex("AD000007", "AD000007 *", buntdb.IndexString)
+	fmt.Printf("String index AD000007 creation time --> %v\n", time.Since(start))
+	start = time.Now()
+	dbbunt.CreateIndex("AD000008", "AD000008 *", buntdb.IndexString)
+	fmt.Printf("String index AD000008 creation time --> %v\n", time.Since(start))
 	// dbbunt.CreateIndex("ENCf9a8611a1c7139d045d8e5e451203ce2adc5e47c3dbe2157", "* * ENCf9a8611a1c7139d045d8e5e451203ce2adc5e47c3dbe2157 * * *", buntdb.IndexString)
 	// dbbunt.CreateIndex("ENC225a6673d276676d6a9456482504256da4401487d286bf4f", "* * ENC225a6673d276676d6a9456482504256da4401487d286bf4f * * *", buntdb.IndexString)
-	dbbunt.CreateIndex("AdActionTime", "*", buntdb.IndexJSON("AdActionTime"))
-	fmt.Printf("JSON index creation time --> %v\n", time.Since(start))
+	// dbbunt.CreateIndex("AdActionTime", "*", buntdb.IndexJSON("AdActionTime"))
+	// fmt.Printf("JSON index creation time --> %v\n", time.Since(start))
 	idx, _ := dbbunt.Indexes()
 	fmt.Printf("Indexes list --> %v\n", idx)
 	// start := time.Now()
@@ -52,40 +55,14 @@ func main() {
 	// start = time.Now()
 	// dbbunt.CreateIndex("ApMac", "*", buntdb.IndexJSON("MAC"))
 	// fmt.Printf("Время создания индекса ApMac --> %v\n", time.Since(start))
+
+	// // Migrate from BoltDB to BuntDB. Generate addition keys
 	// bsl, _ := ByteSessionList(db)
-	// kv := make(map[string]string)
-	// start = time.Now()
-	// err = dbbunt.View(func(tx *buntdb.Tx) error {
-	// 	tx.Ascend("", func(key, val string) bool {
-	// 		kv[key] = val
-	// 		// fmt.Printf("%s\n", key)
-	// 		return true
-	// 	})
-	// 	return nil
-	// })
-	// fmt.Printf("Время время чтения из базы --> %v\n", time.Since(start))
-	// kv1 := make(map[string]string)
-	// start = time.Now()
-	// err = dbbunt.View(func(tx *buntdb.Tx) error {
-	// 	tx.Ascend("AD000008", func(key, val string) bool {
-	// 		kv1[key] = val
-	// 		// fmt.Printf("%s\n", key)
-	// 		return true
-	// 	})
-	// 	return nil
-	// })
-	// fmt.Printf("Время время чтения индекса AD000008 из базы --> %v\n", time.Since(start))
-	// kv2 := make(map[string]string)
-	// start = time.Now()
-	// err = dbbunt.View(func(tx *buntdb.Tx) error {
-	// 	tx.Ascend("AD000007", func(key, val string) bool {
-	// 		kv2[key] = val
-	// 		// fmt.Printf("%s\n", key)
-	// 		return true
-	// 	})
-	// 	return nil
-	// })
-	// fmt.Printf("Время время чтения индекса AD000007 из базы --> %v\n", time.Since(start))
+	// err = generateDB(bsl, 50, dbbunt)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
+
 	// t := time.Date(2016, time.January, 01, 0, 0, 0, 0, time.UTC)
 	// bm := now.New(t).BeginningOfMonth().UnixNano()
 	// ed := now.New(t).EndOfDay().UnixNano()
@@ -93,37 +70,38 @@ func main() {
 	// eq := now.New(t).EndOfQuarter().UnixNano()
 	// fmt.Println(bm, ed, em)
 	kv3 := make(map[string]string)
-	counter := 0
 	start = time.Now()
 	err = dbbunt.View(func(tx *buntdb.Tx) error {
 		tx.Ascend("", func(key, val string) bool {
 			// tx.AscendRange("AdActionTime", string(bm), string(ed), func(key, val string) bool {
 			kv3[key] = val
-			sv, _ := DecodeSessionValue([]byte(val))
-			if sv.SZUrl.ClientMac != "" {
-				fmt.Printf("%s\n", val)
-				counter++
-			}
+			// sv, _ := DecodeSessionValue([]byte(val))
+			// fmt.Printf("%s\n", val)
 			return true
 		})
 		return nil
 	})
-	fmt.Println(counter)
-	fmt.Printf("Время время чтения диапазона индекса AD000007 из базы --> %v\n", time.Since(start))
-	// kv4 := make(map[string]string)
-	// start = time.Now()
-	// err = dbbunt.View(func(tx *buntdb.Tx) error {
-	// 	tx.AscendRange("", string(bm), string(eq), func(key, val string) bool {
-	// 		fmt.Printf("%s\n", key)
-	// 		if key[:7] == "AD000007" {
-	// 			kv4[key] = val
-	// 			fmt.Printf("%s\n", key)
-	// 		}
-	// 		return true
-	// 	})
-	// 	return nil
-	// })
-	// fmt.Printf("Время время чтения диапазона AD000007 из базы --> %v\n", time.Since(start))
+	fmt.Printf("Reading %v rows from BuntDB was --> %v\n", len(kv3), time.Since(start))
+	AD000007 := make(map[string]string)
+	start = time.Now()
+	err = dbbunt.View(func(tx *buntdb.Tx) error {
+		tx.Ascend("AD000007", func(key, val string) bool {
+			AD000007[key] = val
+			return true
+		})
+		return nil
+	})
+	fmt.Printf("Reading %v rows from index %v was --> %v\n", len(AD000007), "AD000007", time.Since(start))
+	AD000008 := make(map[string]string)
+	start = time.Now()
+	err = dbbunt.View(func(tx *buntdb.Tx) error {
+		tx.Ascend("AD000008", func(key, val string) bool {
+			AD000008[key] = val
+			return true
+		})
+		return nil
+	})
+	fmt.Printf("Reading %v rows from index %v was --> %v\n", len(AD000008), "AD000008", time.Since(start))
 }
 
 func generateDB(bss ByteSessions, multiplier int, db *buntdb.DB) error {
@@ -131,17 +109,26 @@ func generateDB(bss ByteSessions, multiplier int, db *buntdb.DB) error {
 	var randTime int64
 	var Avt float64
 	start := time.Now()
-	for i, bs := range bss {
+	for _, bs := range bss {
+		start := time.Now()
 		err = db.Update(func(tx *buntdb.Tx) error {
 			for i := 0; i <= multiplier; i++ {
 				randTime = random(1451606400000000000+10000000000000*int64(i), 1483228799999999999)
 				// fmt.Println(time.Unix(0, randTime).Format("02-01-2006 15:04:05.000000000"))
 				sk := DecodeSessionKey(bs.Key)
 				sk.AdActionTime = randTime
+				if i == 2 || i == 3 {
+					sk.AdID = "AD000008"
+				}
 				sks := SessionKeyToString(sk)
-				_, _, err := tx.Set(sks, string(bs.Value), nil)
-				if err != nil {
-					return err
+				sv, _ := DecodeSessionValue(bs.Value)
+				sv.AdActionTime = randTime
+				svn, _ := EncodeSessionValue(sv)
+				if sv.SZUrl.ClientMac != "" {
+					_, _, err := tx.Set(sks, string(svn), nil)
+					if err != nil {
+						return err
+					}
 				}
 			}
 			return err
@@ -151,9 +138,9 @@ func generateDB(bss ByteSessions, multiplier int, db *buntdb.DB) error {
 		}
 		avt := time.Since(start).Seconds() / float64(multiplier)
 		Avt = Avt + avt
-		fmt.Printf("Итерация %v\nSET oer sec %v\nКлюч %v\n", i, avt, string(bs.Key))
+		// fmt.Printf("Iteration %v\nSET per sec %v\nKey %v\n", i, avt, string(bs.Key))
 	}
-	fmt.Printf("Время генерации базы BuntDB --> %v\nСреднее время SET --> %v\n", time.Since(start), Avt/25591)
+	fmt.Printf("Migration to BuntDB was --> %v\nSET average time was --> %v\n", time.Since(start), Avt/25591)
 	return nil
 }
 
