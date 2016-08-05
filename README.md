@@ -3,7 +3,7 @@ search optimal key:value structure for buntdb
 
 IndexString improvement
 
-Creating IndexString time is reduced from 32.485058468s to 26.732144865s.
+IndexString time is reduced from 32.485058468s to 26.732144865s. 
 The index is based on 1628953 rows. 
 
 Before commit 823e2ea1467b2a65f30f8f8469f00c7c29317dd3
